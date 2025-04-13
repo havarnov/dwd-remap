@@ -8,8 +8,7 @@ download_grid_weight() {
     tar -xvjf "$weight_name.tar.bz2"
 }
 
-# download "00" "v_10m" 0 "20240413" "025"
-download() {
+remap_upload() {
     local forecast=$1
 
     local type=$2
@@ -31,6 +30,37 @@ download() {
     local mapped_base_name="icon_global_WGS84_${resolution}_single-level_${dt}_${offset}_$type_upper.grib2"
     local mapped_blob_name="weather/nwp/icon/WGS84_${resolution}/$type/$dt/${mapped_base_name}.bz2"
 
+    cdo -f grb2 remap,$grid_file,$weight_file $base_name $mapped_base_name
+
+    bzip2 -k $mapped_base_name
+
+    az storage blob upload \
+        --auth-mode login \
+        --account-name dwdremap \
+        --container-name dwd \
+        --file "$mapped_base_name.bz2" \
+        --name "$mapped_blob_name"
+
+    rm $mapped_base_name
+    rm "$mapped_base_name.bz2"
+}
+
+# download "00" "v_10m" 0 "20240413"
+download_remap_upload() {
+    local forecast=$1
+
+    local type=$2
+    local type_upper=$(echo "$2" | awk '{ print toupper($0) }')
+
+    local offset=$(printf "%03d" $3)
+
+    local dt="$4$forecast"
+
+    local base_name="icon_global_icosahedral_single-level_${dt}_${offset}_$type_upper.grib2"
+    local name="$base_name.bz2"
+    local url="https://opendata.dwd.de/weather/nwp/icon/grib/$forecast/$type/$name"
+    local blob_name="weather/nwp/icon/icosahedral/$type/$dt/$name"
+
     result=$(az storage blob exists \
         --auth-mode login \
         --account-name dwdremap \
@@ -45,16 +75,8 @@ download() {
 
         bunzip2 -k $name
 
-        cdo -f grb2 remap,$grid_file,$weight_file $base_name $mapped_base_name
-
-        bzip2 -k $mapped_base_name
-
-        az storage blob upload \
-            --auth-mode login \
-            --account-name dwdremap \
-            --container-name dwd \
-            --file "$mapped_base_name.bz2" \
-            --name "$mapped_blobl_name"
+        remap_upload $1 $2 $3 $4 $5 "025"
+        remap_upload $1 $2 $3 $4 $5 "0125"
 
         az storage blob upload \
             --auth-mode login \
@@ -65,8 +87,6 @@ download() {
 
         rm $base_name
         rm $name
-        rm $mapped_base_name
-        rm "$mapped_base_name.bz2"
     fi
 }
 
@@ -81,12 +101,12 @@ for f in "00" "06" "12" "18";
 do
     for i in $(seq 0 1 78);
     do
-        download $f "v_10m" $i $current_date "025"
+        download_remap_upload $f "v_10m" $i $current_date
     done
 
     for i in $(seq 81 3 180);
     do
-        download $f "v_10m" $i $current_date "025"
+        download_remap_upload $f "v_10m" $i $current_date
     done
 done
 
