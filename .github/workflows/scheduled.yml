@@ -1,0 +1,15 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  download-dwd-icon:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install cdo
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install cdo
