@@ -48,11 +48,11 @@ download() {
             --file $name \
             --name $blob_name
 
-        tar -xvjf $name
+        bunzip2 $name
 
         ./cdo -f grb2 remap,$grid_file,$weight_file $base_name $mapped_base_name
 
-        tar -cvjf $mapped_base_name.bz2 $mapped_base_name
+        bzip2 $mapped_base_name
 
         az storage blob upload \
             --auth-mode login \
@@ -62,8 +62,6 @@ download() {
             --name "$mapped_base_name.bz2"
 
         rm $base_name
-        rm $name
-        rm $mapped_base_name
         rm "$mapped_base_name.bz2"
     fi
 }
