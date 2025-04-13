@@ -29,6 +29,7 @@ download() {
     local url="https://opendata.dwd.de/weather/nwp/icon/grib/$forecast/$type/$name"
     local blob_name="weather/nwp/icon/icosahedral/$type/$dt/$name"
     local mapped_base_name="icon_global_WGS84_${resolution}_single-level_${dt}_${offset}_$type_upper.grib2"
+    local mapped_blob_name="weather/nwp/icon/WGS84_${resolution}/$type/$dt/${mapped_base_name}.bz2"
 
     result=$(az storage blob exists \
         --auth-mode login \
@@ -41,12 +42,6 @@ download() {
         echo "Skipping $name as it already exists."
     else
         curl -O $url
-        az storage blob upload \
-            --auth-mode login \
-            --account-name dwdremap \
-            --container-name dwd \
-            --file $name \
-            --name $blob_name
 
         bunzip2 $name
 
@@ -59,7 +54,14 @@ download() {
             --account-name dwdremap \
             --container-name dwd \
             --file "$mapped_base_name.bz2" \
-            --name "$mapped_base_name.bz2"
+            --name "$mapped_blobl_name"
+
+        az storage blob upload \
+            --auth-mode login \
+            --account-name dwdremap \
+            --container-name dwd \
+            --file $name \
+            --name $blob_name
 
         rm $base_name
         rm "$mapped_base_name.bz2"
