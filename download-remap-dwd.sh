@@ -5,7 +5,7 @@ download_grid_weight() {
     local weight_name="ICON_GLOBAL2WORLD_${resolution}_EASY"
     local weight_url="https://opendata.dwd.de/weather/lib/cdo/${weight_name}.tar.bz2"
     curl -O $weight_url
-    tar -xvjf $weight_name
+    tar -xvjf "$weight_name.tar.bz2"
 }
 
 # download "00" "v_10m" 0 "20240413" "025"
