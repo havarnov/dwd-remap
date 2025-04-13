@@ -33,4 +33,5 @@ jobs:
         azcliversion: latest
         inlineScript: |
           tdnf install awk -y
+          ln -s $(which cdo) cdo
           ./download-remap-dwd.sh
