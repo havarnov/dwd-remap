@@ -102,11 +102,13 @@ do
     for i in $(seq 0 1 78);
     do
         download_remap_upload $f "v_10m" $i $current_date
+        download_remap_upload $f "u_10m" $i $current_date
     done
 
     for i in $(seq 81 3 180);
     do
         download_remap_upload $f "v_10m" $i $current_date
+        download_remap_upload $f "u_10m" $i $current_date
     done
 done
 
