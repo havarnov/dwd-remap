@@ -16,16 +16,18 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+
     - uses: azure/login@v2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-#    - name: Install cdo
-#      run: |
-#        sudo apt-get update
-#        sudo apt-get -y install cdo
+    - name: Install cdo
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install cdo
+        ln -s $(which cdo) cdo
 
     - name: Azure CLI script
       uses: azure/cli@v2
@@ -33,5 +35,5 @@ jobs:
         azcliversion: latest
         inlineScript: |
           tdnf install awk -y
-          ln -s $(which cdo) cdo
+          tdnf install tar -y
           ./download-remap-dwd.sh
