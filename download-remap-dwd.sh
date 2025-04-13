@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 download_grid_weight() {
     local resolution=$1
