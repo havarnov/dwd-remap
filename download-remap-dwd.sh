@@ -43,11 +43,11 @@ download() {
     else
         curl -O $url
 
-        bunzip2 $name
+        bunzip2 -k $name
 
-        ./cdo -f grb2 remap,$grid_file,$weight_file $base_name $mapped_base_name
+        cdo -f grb2 remap,$grid_file,$weight_file $base_name $mapped_base_name
 
-        bzip2 $mapped_base_name
+        bzip2 -k $mapped_base_name
 
         az storage blob upload \
             --auth-mode login \
@@ -64,6 +64,8 @@ download() {
             --name $blob_name
 
         rm $base_name
+        rm $name
+        rm $mapped_base_name
         rm "$mapped_base_name.bz2"
     fi
 }
