@@ -21,8 +21,8 @@ download() {
 
     local resolution=$5
 
-    local weight_file="ICON_GLOBAL2WORLD_${resolution}_EASY/target_grid_world_${resolution}.txt"
-    local grid_file="ICON_GLOBAL2WORLD_${resolution}_EASY/weights_icogl2world_${resolution}.nc"
+    local grid_file="ICON_GLOBAL2WORLD_${resolution}_EASY/target_grid_world_${resolution}.txt"
+    local weight_file="ICON_GLOBAL2WORLD_${resolution}_EASY/weights_icogl2world_${resolution}.nc"
 
     local base_name="icon_global_icosahedral_single-level_${dt}_${offset}_$type_upper.grib2"
     local name="$base_name.bz2"
