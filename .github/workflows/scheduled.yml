@@ -36,5 +36,5 @@ jobs:
         sudo apt-get update
         sudo apt-get -y install cdo
 
-        dotnet run -- download-remap-upload --cdo-path $(which cdo)
+        dotnet run --project dwd-cli -- download-remap-upload --cdo-path $(which cdo)
 
