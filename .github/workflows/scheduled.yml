@@ -5,10 +5,10 @@ on:
     branches:
       - main
   schedule:
-    - cron:  '0 02 * * *'
-    - cron:  '0 08 * * *'
-    - cron:  '0 14 * * *'
-    - cron:  '0 20 * * *'
+    - cron:  '0 04 * * *'
+    - cron:  '0 10 * * *'
+    - cron:  '0 16 * * *'
+    - cron:  '0 22 * * *'
 
 jobs:
   download-dwd-icon:
