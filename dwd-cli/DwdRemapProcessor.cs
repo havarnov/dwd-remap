@@ -114,11 +114,10 @@ internal class DwdRemapProcessor(
         await using var stream = new BZip2OutputStream(memoryStream);
 
         await fileStream.CopyToAsync(stream);
+        await stream.FlushAsync();
         stream.Close();
 
-        await using var writeMemoryStream = new MemoryStream(memoryStream.GetBuffer());
-
-        await blobContainerClient.UploadBlobAsync(blobName, writeMemoryStream);
+        await blobContainerClient.UploadBlobAsync(blobName, BinaryData.FromBytes(memoryStream.ToArray()));
 
         File.Delete(tempFile);
     }
