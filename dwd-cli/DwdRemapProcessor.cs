@@ -58,10 +58,9 @@ internal class DwdRemapProcessor(
                     await using var zipUncompressed = new BZip2InputStream(stream);
 
                     var icosahedralGribFilePath = Path.GetTempFileName();
-                    await using var file = File.OpenWrite(icosahedralGribFilePath);
+                    var file = File.OpenWrite(icosahedralGribFilePath);
                     await zipUncompressed.CopyToAsync(file);
-                    await file.FlushAsync();
-                    file.Close();
+                    await file.DisposeAsync();
 
                     await RemapAndUpload(
                         gridWeight0125,
@@ -114,6 +113,8 @@ internal class DwdRemapProcessor(
 
         await using var fileStream = File.OpenRead(tempFile);
         await fileStream.CopyToAsync(stream);
+        await stream.FlushAsync();
+        await memoryStream.FlushAsync();
 
         memoryStream.Position = 0;
         await blobContainerClient.UploadBlobAsync(blobName, memoryStream);
