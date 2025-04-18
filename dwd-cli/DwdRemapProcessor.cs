@@ -113,7 +113,10 @@ internal class DwdRemapProcessor(
 
         await using var fileStream = File.OpenRead(tempFile);
         await fileStream.CopyToAsync(stream);
+
         await stream.FlushAsync();
+        stream.Close();
+
         await memoryStream.FlushAsync();
 
         memoryStream.Position = 0;
