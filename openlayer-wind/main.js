@@ -1,132 +1,34 @@
 import './style.css';
+
 import TileLayer from 'ol/layer/Tile';
 import OSM from 'ol/source/OSM';
 import Map from 'ol/Map.js';
 import View from 'ol/View.js';
-import TileDebug from 'ol/source/TileDebug.js';
-import GeoJSON from 'ol/format/GeoJSON.js';
-import {DEVICE_PIXEL_RATIO} from 'ol/has.js';
-import Flow from 'ol/layer/Flow.js';
-import WebGLVectorLayer from 'ol/layer/WebGLVector.js';
 import {get as getProjection, transform} from 'ol/proj.js';
-import DataTileSource from 'ol/source/DataTile.js';
-import VectorSource from 'ol/source/Vector.js';
-import {createXYZ, wrapX} from 'ol/tilegrid.js';
 import VectorTileLayer from 'ol/layer/VectorTile.js';
 import VectorTileSource from 'ol/source/VectorTile.js';
-import MVT from 'ol/format/MVT.js';
-import GeoTIFF from 'ol/source/GeoTIFF.js';
-
 import Feature from 'ol/Feature.js';
-import Polygon from 'ol/geom/Polygon.js';
 import Point from 'ol/geom/Point.js';
-
-import Fill from 'ol/style/Fill.js';
-import RegularShape from 'ol/style/RegularShape.js';
-import Stroke from 'ol/style/Stroke.js';
 import Style from 'ol/style/Style.js';
-import Circle from 'ol/style/Circle.js';
 import Icon from 'ol/style/Icon.js';
-import WebGLTile from 'ol/layer/WebGLTile.js';
-import Image from 'ol/Image.js';
-
 import {getBottomRight} from 'ol/extent';
 import {getTopLeft} from 'ol/extent';
 import {getCenter} from 'ol/extent';
 
-import { fromUrl, fromArrayBuffer, fromBlob  } from "geotiff";
+import {fromArrayBuffer} from "geotiff";
 
 const map = new Map({
-  target: 'map',
-  layers: [
+    target: 'map',
+    layers: [
         new TileLayer({
-          source: new OSM()
+            source: new OSM()
         }),
-      // new TileLayer({
-      //     source: new TileDebug(),
-      // }),
-  ],
-  view: new View({
-    center: [0, 0],
-    zoom: 2
-  })
+    ],
+    view: new View({
+        center: [0, 0],
+        zoom: 2
+    })
 });
-
-const shaft = new RegularShape({
-  points: 2,
-  radius: 5,
-  stroke: new Stroke({
-    width: 2,
-    color: 'black',
-  }),
-  rotateWithView: true,
-});
-
-const head = new RegularShape({
-  points: 3,
-  radius: 5,
-  fill: new Fill({
-    color: 'black',
-  }),
-  rotateWithView: true,
-});
-
-// const styles = [new Style({image: shaft}), new Style({image: head})];
-const styles = [new Style({image: shaft}),];
-
-// vector tile server
-const layer = new VectorTileLayer({
-    source: new VectorTileSource({
-        format: new MVT(),
-        url: 'http://0.0.0.0:3000/wind/{z}/{x}/{y}',
-    }),
-    minZoom: 30,
-    style: function (feature) {
-        const properties = feature.getProperties();
-        // rotate arrow away from wind origin
-        const angle = properties.direction;
-        const scale = Math.sqrt((properties.u ** 2) + (properties.v ** 2)) / 10;
-        shaft.setScale([1, scale]);
-        shaft.setRotation(angle);
-        head.setDisplacement([
-          0,
-          head.getRadius() / 2 + shaft.getRadius() * scale,
-        ]);
-        head.setRotation(angle);
-        return styles;
-    },
-});
-// map.addLayer(layer);
-
-// vector tile files
-/*
-const vectorSource = new VectorTileSource({
-      tileUrlFunction: function (tileCoord) {
-        // Use the tile coordinate as a pseudo URL for caching purposes
-        return JSON.stringify(tileCoord);
-      },
-      tileLoadFunction: function (tile, url) {
-        const tileCoord = JSON.parse(url);
-        const tileGrid = vectorSource.getTileGrid();
-        const extent = vectorSource.getTileGrid().getTileCoordExtent(tileCoord);
-        const mapProjection = getProjection('EPSG:3857');
-        const targetProjection = getProjection('EPSG:4326');
-        const center = transform(getCenter(extent), mapProjection, targetProjection);
-        console.log(center);
-        console.log(getCenter(extent));
-        const feature = new Feature({
-          geometry: new Point(getCenter(extent)),
-        });
-        feature.setProperties({
-            direction: Math.random() * 360, // Example random direction
-            u: Math.random() * 200,
-            v: Math.random() * 200,
-          });
-        tile.setFeatures([feature]);
-      },
-    });
-*/
-
 
 function metersPerSecondToKnotsString(metersPerSecond) {
     const knots = metersPerSecond * 1.94384;
@@ -215,16 +117,11 @@ function metersPerSecondToKnotsString(metersPerSecond) {
 }
 
 const vectorLayer = new VectorTileLayer({
-    // source: vectorSource,
     minZoom: 2,
     style: function (feature) {
-        // const svg = getWindBarb(windSpeed);
-
-        // THIS WORKS:
         const properties = feature.getProperties();
         const windSpeed = Math.sqrt(properties.u * properties.u + properties.v * properties.v);
         const name = metersPerSecondToKnotsString(windSpeed);
-        const nearest = Math.floor(windSpeed / 2) * 2;
         return new Style({
             image: new Icon({
                 opacity: 1,
@@ -234,20 +131,6 @@ const vectorLayer = new VectorTileLayer({
             })
         });
     },
-    /*
-    style: function (feature) {
-    const direction = feature.get('direction');
-    const radius = 5 + (feature.get('u') / 50); // Example: radius based on 'u'
-
-    return new Style({
-      image: new Circle({
-        radius: radius,
-        fill: new Fill({ color: `hsl(${direction}, 80%, 50%)` }), // Color based on direction
-        stroke: new Stroke({ color: 'black', width: 1 }),
-      }),
-    });
-  },
-    */
 });
 
 map.addLayer(vectorLayer);
@@ -267,71 +150,67 @@ function getAverageOfFloat64Array(float64Array) {
 
 const url = 'icon_global_WGS84_0125_single-level_2025041800_000_WIND_10M.tiff';
 fetch(url)
-  .then(response => response.arrayBuffer())
-  .then(arrayBuffer => fromArrayBuffer(arrayBuffer))
-  .then(tiff => tiff.getImage())
-  .then(image => {
-      console.log(image);
-      const vectorSource = new VectorTileSource({
+    .then(response => response.arrayBuffer())
+    .then(arrayBuffer => fromArrayBuffer(arrayBuffer))
+    .then(tiff => tiff.getImage())
+    .then(image => {
+        console.log(image);
+        const vectorSource = new VectorTileSource({
             tileSize: 128,
             tileUrlFunction: function (tileCoord) {
-              // Use the tile coordinate as a pseudo URL for caching purposes
-              return JSON.stringify(tileCoord);
+                // Use the tile coordinate as a pseudo URL for caching purposes
+                return JSON.stringify(tileCoord);
             },
             tileLoadFunction: function (tile, url) {
-              const tileCoord = JSON.parse(url);
-              // console.log(tileCoord);
-              const tileGrid = vectorSource.getTileGrid();
-              const extent = tileGrid.getTileCoordExtent(tileCoord);
-              const center = getCenter(extent);
+                const tileCoord = JSON.parse(url);
+                const tileGrid = vectorSource.getTileGrid();
+                const extent = tileGrid.getTileCoordExtent(tileCoord);
+                const center = getCenter(extent);
 
-              // 1. Project tile center to GeoTIFF's CRS (WGS84 - EPSG:4326) if needed
-              const mapProjection = getProjection('EPSG:3857'); // Assuming map is in this
-              const geoTiffProjection = getProjection('EPSG:4326'); // From gdalinfo
-              const centerWGS84 = transform(center, mapProjection, geoTiffProjection);
+                // 1. Project tile center to GeoTIFF's CRS (WGS84 - EPSG:4326) if needed
+                const mapProjection = getProjection('EPSG:3857'); // Assuming map is in this
+                const geoTiffProjection = getProjection('EPSG:4326'); // From gdalinfo
 
-              const topLeft = transform(getTopLeft(extent), mapProjection, geoTiffProjection);
-              const bottomRight = transform(getBottomRight(extent), mapProjection, geoTiffProjection);
+                const topLeft = transform(getTopLeft(extent), mapProjection, geoTiffProjection);
+                const bottomRight = transform(getBottomRight(extent), mapProjection, geoTiffProjection);
 
-              // 2. Use GeoTIFF's geotransform to get pixel coordinates
-              const modelTiepoint = image.getFileDirectory().ModelTiepoint;
-              const xGeo = modelTiepoint[3]; // Longitude of top-left of first pixel
-              const yGeo = modelTiepoint[4]; // Latitude of top-left of first pixel
+                // 2. Use GeoTIFF's geotransform to get pixel coordinates
+                const modelTiepoint = image.getFileDirectory().ModelTiepoint;
+                const xGeo = modelTiepoint[3]; // Longitude of top-left of first pixel
+                const yGeo = modelTiepoint[4]; // Latitude of top-left of first pixel
 
-              const pixelScale = image.getFileDirectory().ModelPixelScale;
-              const pixelSizeX = pixelScale[0];
-              const pixelSizeY = -Math.abs(pixelScale[1]); // Ensure negative for latitude
+                const pixelScale = image.getFileDirectory().ModelPixelScale;
+                const pixelSizeX = pixelScale[0];
+                const pixelSizeY = -Math.abs(pixelScale[1]); // Ensure negative for latitude
 
-              const minPixelX = Math.floor((topLeft[0] - xGeo) / pixelSizeX);
-              const maxPixelX = Math.ceil((bottomRight[0] - xGeo) / pixelSizeX);
-              const maxPixelY = Math.floor((bottomRight[1] - yGeo) / pixelSizeY);
-              const minPixelY = Math.ceil((topLeft[1] - yGeo) / pixelSizeY);
+                const minPixelX = Math.floor((topLeft[0] - xGeo) / pixelSizeX);
+                const maxPixelX = Math.ceil((bottomRight[0] - xGeo) / pixelSizeX);
 
-              let pixelX = Math.floor((centerWGS84[0] - xGeo) / pixelSizeX - 0.5);
-              let pixelY = Math.floor((centerWGS84[1] - yGeo) / pixelSizeY - 0.5);
+                const minPixelY = Math.floor((topLeft[1] - yGeo) / pixelSizeY);
+                const maxPixelY = Math.ceil((bottomRight[1] - yGeo) / pixelSizeY);
 
-              const imageWidth = image.getWidth();
-              const imageHeight = image.getHeight();
+                // 3. Iterate and accumulate pixel values
+                // image.readRasters({ bbox: [topLeft[0], topLeft[1], bottomRight[0], bottomRight[1]], resX: 0.1, resY: 0.1, bands: [0, 1] }) // Read both bands
+                image.readRasters({
+                    window: [minPixelX, minPixelY, maxPixelX, maxPixelY],
+                    bands: [0, 1]
+                }) // Read both bands
+                    .then(rasters => {
+                        const uValues = rasters[0];
+                        const vValues = rasters[1];
 
-              // 3. Iterate and accumulate pixel values
-              image.readRasters({ window: [minPixelX, minPixelY, maxPixelX, maxPixelY], bands: [0, 1] }) // Read both bands
-                .then(rasters => {
-                    const uValues = rasters[0];
-                    const vValues = rasters[1];
+                        const uAvg = getAverageOfFloat64Array(uValues);
+                        const vAvg = getAverageOfFloat64Array(vValues);
+                        const direction = Math.atan2(vAvg, uAvg);
 
-                    const uAvg = getAverageOfFloat64Array(uValues);
-                    const vAvg = getAverageOfFloat64Array(vValues);
-                    const direction = Math.atan2(vAvg, uAvg);
-
-                    const feature = new Feature({
-                      geometry: new Point(center),
+                        const feature = new Feature({
+                            geometry: new Point(center),
+                        });
+                        feature.setProperties({u: uAvg, v: vAvg, direction: direction,});
+                        tile.setFeatures([feature]);
                     });
-                    feature.setProperties({ u: uAvg, v: vAvg, direction: direction, });
-                    tile.setFeatures([feature]);
-                });
             },
-          });
-    vectorLayer.setSource(vectorSource);
-  })
-  .catch(error => console.error('Error loading GeoTIFF:', error));
-
+        });
+        vectorLayer.setSource(vectorSource);
+    })
+    .catch(error => console.error('Error loading GeoTIFF:', error));
